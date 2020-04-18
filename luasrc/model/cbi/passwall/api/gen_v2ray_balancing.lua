@@ -4,7 +4,7 @@ local json = require "luci.jsonc"
 local node_section = arg[1]
 local proto = arg[2]
 local redir_port = arg[3]
-local socks5_proxy_port = arg[4]
+local socks_proxy_port = arg[4]
 local node = ucursor:get_all("passwall", node_section)
 local inbounds = {}
 local outbounds = {}
@@ -27,7 +27,7 @@ local function gen_outbound(node)
                 node.port = new_port
                 sys.call(string.format(
                              "/usr/share/passwall/app.sh gen_start_config %s %s %s %s %s %s",
-                             node_id, new_port, "SOCKS5",
+                             node_id, new_port, "SOCKS",
                              "/var/etc/passwall/v2_balancing_" .. node_type .. "_" ..
                                  node_id .. ".json", "4", "127.0.0.1"))
                 node.v2ray_protocol = "socks"
@@ -44,7 +44,7 @@ local function gen_outbound(node)
                     tonumber(node.v2ray_mux_concurrency) or 8
             },
             -- 底层传输配置
-            streamSettings = {
+            streamSettings = (node.v2ray_protocol == "vmess") and {
                 network = node.v2ray_transport,
                 security = node.v2ray_stream_security,
                 tlsSettings = (node.v2ray_stream_security == "tls") and {
@@ -90,7 +90,7 @@ local function gen_outbound(node)
                     key = node.v2ray_quic_key,
                     header = {type = node.v2ray_quic_guise}
                 } or nil
-            },
+            } or nil,
             settings = {
                 vnext = (node.v2ray_protocol == "vmess") and {
                     {
@@ -114,16 +114,6 @@ local function gen_outbound(node)
                             {{user = node.username, pass = node.password}} or
                             nil
                     }
-                } or (node.v2ray_protocol == "ss") and {
-                    {
-                        email = nil,
-                        address = node.address,
-                        method = nil,
-                        ota = nil,
-                        password = node.password or nil,
-                        port = tonumber(node.port),
-                        level = 1
-                    }
                 } or nil
             }
         }
@@ -131,10 +121,10 @@ local function gen_outbound(node)
     return result
 end
 
-if socks5_proxy_port ~= "nil" then
+if socks_proxy_port ~= "nil" then
     table.insert(inbounds, {
         listen = "0.0.0.0",
-        port = socks5_proxy_port,
+        port = socks_proxy_port,
         protocol = "socks",
         settings = {auth = "noauth", udp = true, ip = "127.0.0.1"}
     })
