@@ -49,9 +49,9 @@ config PACKAGE_$(PKG_NAME)_INCLUDE_Brook
 	bool "Include Brook"
 	default n
 	
-# config PACKAGE_$(PKG_NAME)_INCLUDE_kcptun
-# 	bool "Include kcptun"
-# 	default n
+config PACKAGE_$(PKG_NAME)_INCLUDE_kcptun
+	bool "Include kcptun"
+	default n
 
 config PACKAGE_$(PKG_NAME)_INCLUDE_haproxy
 	bool "Include haproxy"
@@ -96,6 +96,7 @@ define Package/$(PKG_NAME)
   +PACKAGE_$(PKG_NAME)_INCLUDE_Trojan:trojan \
   +PACKAGE_$(PKG_NAME)_INCLUDE_Trojan:ipt2socks \
   +PACKAGE_$(PKG_NAME)_INCLUDE_Brook:brook \
+  +PACKAGE_$(PKG_NAME)_INCLUDE_kcptun:kcptun-c \
   +PACKAGE_$(PKG_NAME)_INCLUDE_haproxy:haproxy \
   +PACKAGE_$(PKG_NAME)_INCLUDE_ChinaDNS_NG:chinadns-ng \
   +PACKAGE_$(PKG_NAME)_INCLUDE_pdnsd:pdnsd-alt \
