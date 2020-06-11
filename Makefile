@@ -7,8 +7,8 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=luci-app-passwall
 PKG_VERSION:=3.6
-PKG_RELEASE:=40
-PKG_DATE:=20200411
+PKG_RELEASE:=41
+PKG_DATE:=20200415
 
 PKG_BUILD_DIR := $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)
 
@@ -37,9 +37,9 @@ config PACKAGE_$(PKG_NAME)_INCLUDE_ShadowsocksR_socks
 	bool "Include ShadowsocksR Socks (ssr-local)"
 	default y
 	
-# config PACKAGE_$(PKG_NAME)_INCLUDE_V2ray
-# 	bool "Include V2ray"
-# 	default y
+config PACKAGE_$(PKG_NAME)_INCLUDE_V2ray
+	bool "Include V2ray"
+	default y
 
 config PACKAGE_$(PKG_NAME)_INCLUDE_Trojan
 	bool "Include Trojan"
@@ -49,9 +49,9 @@ config PACKAGE_$(PKG_NAME)_INCLUDE_Brook
 	bool "Include Brook"
 	default n
 	
-# config PACKAGE_$(PKG_NAME)_INCLUDE_kcptun
-# 	bool "Include kcptun"
-# 	default n
+config PACKAGE_$(PKG_NAME)_INCLUDE_kcptun
+	bool "Include kcptun"
+	default n
 
 config PACKAGE_$(PKG_NAME)_INCLUDE_haproxy
 	bool "Include haproxy"
@@ -69,13 +69,13 @@ config PACKAGE_$(PKG_NAME)_INCLUDE_dns2socks
 	bool "Include dns2socks"
 	default y
 	
-# config PACKAGE_$(PKG_NAME)_INCLUDE_v2ray-plugin
-# 	bool "Include v2ray-plugin (Shadowsocks plugin)"
-# 	default n
+config PACKAGE_$(PKG_NAME)_INCLUDE_v2ray-plugin
+	bool "Include v2ray-plugin (Shadowsocks plugin)"
+	default n
 
-# config PACKAGE_$(PKG_NAME)_INCLUDE_simple-obfs
-# 	bool "Include simple-obfs (Shadowsocks plugin)"
-# 	default n
+config PACKAGE_$(PKG_NAME)_INCLUDE_simple-obfs
+	bool "Include simple-obfs (Shadowsocks plugin)"
+	default n
 
 endmenu
 endef
@@ -92,13 +92,17 @@ define Package/$(PKG_NAME)
   +PACKAGE_$(PKG_NAME)_INCLUDE_ShadowsocksR:shadowsocksr-libev-alt \
   +PACKAGE_$(PKG_NAME)_INCLUDE_Shadowsocks_socks:shadowsocks-libev-ss-local \
   +PACKAGE_$(PKG_NAME)_INCLUDE_ShadowsocksR_socks:shadowsocksr-libev-ssr-local \
+  +PACKAGE_$(PKG_NAME)_INCLUDE_V2ray:v2ray \
   +PACKAGE_$(PKG_NAME)_INCLUDE_Trojan:trojan \
   +PACKAGE_$(PKG_NAME)_INCLUDE_Trojan:ipt2socks \
   +PACKAGE_$(PKG_NAME)_INCLUDE_Brook:brook \
+  +PACKAGE_$(PKG_NAME)_INCLUDE_kcptun:kcptun-client \
   +PACKAGE_$(PKG_NAME)_INCLUDE_haproxy:haproxy \
   +PACKAGE_$(PKG_NAME)_INCLUDE_ChinaDNS_NG:chinadns-ng \
   +PACKAGE_$(PKG_NAME)_INCLUDE_pdnsd:pdnsd-alt \
-  +PACKAGE_$(PKG_NAME)_INCLUDE_dns2socks:dns2socks
+  +PACKAGE_$(PKG_NAME)_INCLUDE_dns2socks:dns2socks \
+  +PACKAGE_$(PKG_NAME)_INCLUDE_v2ray-plugin:v2ray-plugin \
+  +PACKAGE_$(PKG_NAME)_INCLUDE_simple-obfs:simple-obfs
 endef
 
 define Build/Prepare
@@ -131,6 +135,9 @@ define Package/$(PKG_NAME)/install
 	
 	$(INSTALL_DIR) $(1)/usr/share/passwall
 	cp -pR ./root/usr/share/passwall/* $(1)/usr/share/passwall
+	
+	$(INSTALL_DIR) $(1)/usr/share/rpcd/acl.d
+	cp -pR ./root/usr/share/rpcd/acl.d/* $(1)/usr/share/rpcd/acl.d
 	
 	$(INSTALL_DIR) $(1)/usr/lib/lua/luci
 	cp -pR ./luasrc/* $(1)/usr/lib/lua/luci/
