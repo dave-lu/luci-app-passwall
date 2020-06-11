@@ -229,7 +229,7 @@ o.rmempty = false
 ---- Tips
 s:append(Template("passwall/global/tips"))
 
---[[
+---[[
 local apply = luci.http.formvalue("cbi.apply")
 if apply then
 os.execute("/etc/init.d/passwall restart")
