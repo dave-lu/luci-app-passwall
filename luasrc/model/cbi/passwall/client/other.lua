@@ -1,6 +1,7 @@
-local api = require "luci.model.cbi.passwall.api.api"
+local uci = require"luci.model.uci".cursor()
+local appname = "passwall"
 
-m = Map("passwall")
+m = Map(appname)
 
 -- [[ Delay Settings ]]--
 s = m:section(TypedSection, "global_delay", translate("Delay Settings"))
@@ -73,8 +74,8 @@ o.default = "22,25,53,143,465,587,993,995,80,443"
 o:value("1:65535", translate("All"))
 o:value("22,25,53,143,465,587,993,995,80,443", translate("Common Use"))
 o:value("80,443", translate("Only Web"))
-o:value("80:", "80 " .. translate("or more"))
-o:value(":443", "443 " .. translate("or less"))
+o:value("80:65535", "80 " .. translate("or more"))
+o:value("1:443", "443 " .. translate("or less"))
 
 ---- UDP Redir Ports
 o = s:option(Value, "udp_redir_ports", translate("UDP Redir Ports"))
@@ -91,15 +92,6 @@ o:value("1", translate("1 Process"))
 o:value("2", "2 " .. translate("Process"))
 o:value("3", "3 " .. translate("Process"))
 o:value("4", "4 " .. translate("Process"))
-
----- Socks Proxy Port
-local socks_node_num = tonumber(api.uci_get_type("global_other",
-                                                  "socks_node_num", 1))
-for i = 1, socks_node_num, 1 do
-    o = s:option(Value, "socks_proxy_port" .. i, translate("Socks Proxy Port"))
-    o.datatype = "port"
-    o.default = "108" .. i
-end
 
 --[[
 ---- Proxy IPv6
@@ -152,28 +144,29 @@ o:value("1")
 o:value("2")
 o:value("3")
 
----- Socks Node Number Option
-o = s:option(ListValue, "socks_node_num", "Socks" .. translate("Node Number"))
-o.default = "1"
-o.rmempty = false
-o:value("1")
-o:value("2")
-o:value("3")
+o = s:option(MultiValue, "status", translate("Status info"))
+o:value("big_icon", translate("Big icon")) -- 大图标
+o:value("show_check_port", translate("Show node check")) -- 显示节点检测
+o:value("show_ip111", translate("Show Show IP111")) -- 显示IP111
 
----- 状态使用大图标
-o = s:option(Flag, "status_use_big_icon", translate("Status Use Big Icon"))
-o.default = "1"
-o.rmempty = false
-
----- 显示节点检测
-o =
-    s:option(Flag, "status_show_check_port", translate("Status Show Check Port"))
-o.default = "0"
-o.rmempty = false
-
----- 显示IP111
-o = s:option(Flag, "status_show_ip111", translate("Status Show IP111"))
-o.default = "0"
-o.rmempty = false
+local nodes_table = {}
+uci:foreach(appname, "nodes", function(e)
+    if e.type and e.remarks then
+        local remarks = ""
+        if e.type == "V2ray" and (e.protocol == "_balancing" or e.protocol == "_shunt") then
+            remarks = "%s：[%s] " % {translatef(e.type .. e.protocol), e.remarks}
+        else
+            if e.use_kcp and e.use_kcp == "1" then
+                remarks = "%s+%s：[%s] %s" % {e.type, "Kcptun", e.remarks, e.address}
+            else
+                remarks = "%s：[%s] %s:%s" % {e.type, e.remarks, e.address, e.port}
+            end
+        end
+        nodes_table[#nodes_table + 1] = {
+            id = e[".name"],
+            remarks = remarks
+         }
+    end
+end)
 
 return m
